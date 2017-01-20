@@ -1,7 +1,8 @@
-from six.moves.urllib.parse import quote_plus
 import os.path
+from collections import OrderedDict
 
 from docutils import nodes
+from six.moves.urllib.parse import quote_plus
 
 from .fsdict import FSDict
 from . import feedgenerator
@@ -169,13 +170,12 @@ def create_feed_item(app, docname, templatename, ctx, doctree):
     #     unique_id=None, enclosure=None, categories=(), item_copyright=None,
     #     ttl=None,
     link = app.config.feed_base_url + '/' + ctx['current_page_name'] + ctx['file_suffix']
-    item = {
-      'title': ctx.get('title'),
-      'link': link,
-      'unique_id': link,
-      'description': absolutify(ctx.get('body'), link),
-      'pubdate': pub_date
-    }
+    item = OrderedDict()
+    item['title'] = ctx.get('title')
+    item['link'] = link
+    item['unique_id'] = link
+    item['description'] = absolutify(ctx.get('body'), link)
+    item['pubdate'] = pub_date
     if 'author' in metadata:
         item['author'] = metadata['author']
         
