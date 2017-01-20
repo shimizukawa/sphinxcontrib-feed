@@ -22,7 +22,16 @@ http://diveintomark.org/archives/2004/02/04/incompatible-rss
 
 import re
 import datetime
+import itertools
+
 from .django_support import SimplerXMLGenerator, iri_to_uri, force_unicode
+
+
+def take_count(sequence, count=None):
+    if count is None:
+        return sequence
+    return itertools.islice(sequence, count)
+
 
 def rfc2822_date(date):
     # We do this ourselves to be timezone aware, email.Utils is not tz aware.
@@ -69,7 +78,8 @@ class SyndicationFeed(object):
     "Base class for all syndication feeds. Subclasses should provide write()"
     def __init__(self, title, link, description, language=None, author_email=None,
             author_name=None, author_link=None, subtitle=None, categories=None,
-            feed_url=None, feed_copyright=None, feed_guid=None, ttl=None, **kwargs):
+            feed_url=None, feed_copyright=None, feed_guid=None, ttl=None, limit=None,
+            **kwargs):
         to_unicode = lambda s: force_unicode(s, strings_only=True)
         if categories:
             categories = [force_unicode(c) for c in categories]
@@ -90,6 +100,7 @@ class SyndicationFeed(object):
         }
         self.feed.update(kwargs)
         self.items = []
+        self.limit = limit
 
     def add_item(self, title, link, description, author_email=None,
         author_name=None, author_link=None, pubdate=None, comments=None,
@@ -201,7 +212,7 @@ class RssFeed(SyndicationFeed):
         return {u"version": self._version}
 
     def write_items(self, handler):
-        for item in self.items:
+        for item in take_count(self.items, self.limit):
             handler.startElement(u'item', self.item_attributes(item))
             self.add_item_elements(handler, item)
             handler.endElement(u"item")
@@ -310,7 +321,7 @@ class Atom1Feed(SyndicationFeed):
             handler.addQuickElement(u"rights", self.feed['feed_copyright'])
 
     def write_items(self, handler):
-        for item in self.items:
+        for item in take_count(self.items, self.limit):
             handler.startElement(u"entry", self.item_attributes(item))
             self.add_item_elements(handler, item)
             handler.endElement(u"entry")

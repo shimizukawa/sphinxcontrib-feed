@@ -36,7 +36,8 @@ def setup(app):
     app.add_config_value('feed_base_url', '', 'html')
     app.add_config_value('feed_description', '', 'html')
     app.add_config_value('feed_filename', 'rss.xml', 'html')
-    
+    app.add_config_value('feed_limit', None, 'html')
+
     app.add_directive('latest', Latest)
     app.add_node(latest)
     
@@ -207,7 +208,8 @@ def emit_feed(app, exc):
       'title': title,
       'link': app.config.feed_base_url,
       'feed_url': app.config.feed_base_url,
-      'description': app.config.feed_description
+      'description': app.config.feed_description,
+      'limit': app.config.feed_limit,
     }
     if app.config.language:
         feed_dict['language'] = app.config.language
