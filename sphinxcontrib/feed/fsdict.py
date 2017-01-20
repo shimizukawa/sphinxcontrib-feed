@@ -34,6 +34,9 @@ class FSDict(dict):
         super(FSDict, self).__init__(*args, **kwargs)
     
     def __setitem__(self, key, val, *args, **kwargs):
+        if (self.work_dir / key).exists() and val == self[key]:
+            return  # skip overwrite identical data with hash-randomized
+
         try:
             pickle.dump(val, open(self.work_dir/key, 'wb'))
         except Exception:
