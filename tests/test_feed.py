@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from os.path import exists
-import re
-import sys
-import difflib
-import htmlentitydefs
 from StringIO import StringIO
-from util import test_root, raises, raises_msg, Struct,\
-  ListOutput, TestApp, with_app, gen_with_app, path, with_tempdir,\
-  write_file, sprint
-from path import path
+from sphinx_testing.path import path
+from sphinx_testing.util import TestApp
 from BeautifulSoup import BeautifulSoup
 import feedparser
-from datetime import datetime
 import unittest
 
+test_root = path(__file__).parent.joinpath('root').abspath()
 
 
 class TestFeedStructure(unittest.TestCase):
@@ -25,26 +18,21 @@ class TestFeedStructure(unittest.TestCase):
         # %(root)s/includes.txt:4: WARNING: download file not readable: nonexisting.png
         # """
         self.FEED_WARNINGS = self.ENV_WARNINGS + "" # nothing here either yet
-        
-        if not (test_root / '_static').exists():
-            (test_root / '_static').mkdir() #this empty dir is not included in version control
         self.feed_warnfile = StringIO()
-    
-    def tearDown(self):
-        (test_root / '_build').rmtree(True)
 
     def test_feed_by_parsing_it(self):
         feed_warnfile = self.feed_warnfile
-        app = TestApp(buildername='html', warning=feed_warnfile, cleanenv=True)  
+        app = TestApp(srcdir=test_root, buildername='html', warning=feed_warnfile,
+                      freshenv=True)
         app.build(force_all=True, filenames=[]) #build_all misses the crucial finish signal
         feed_warnings = feed_warnfile.getvalue().replace(os.sep, '/')
         feed_warnings_exp = self.FEED_WARNINGS % {'root': app.srcdir}
         self.assertEqual(feed_warnings, feed_warnings_exp)
-        rss_path = os.path.join(app.outdir, 'rss.xml')
-        self.assertTrue(exists(rss_path))
-    
-        base_path = unicode("file:/" + app.outdir)
-    
+        rss_path = (app.outdir / 'rss.xml')
+        self.assertTrue(rss_path.exists())
+
+        base_path = app.config.feed_base_url
+
         # see http://www.feedparser.org/
         f = feedparser.parse(rss_path)
         #feedparser well-formedness detection. We want this.
@@ -65,7 +53,7 @@ class TestFeedStructure(unittest.TestCase):
         self.assertEqual(entries[2].link, base_path + '/C_most_aged.html')
         self.assertEqual(entries[2].guid, base_path + '/C_most_aged.html')
         #Now we do it all again to make sure that things work when handling stale files
-        app2 = TestApp(buildername='html', warning=feed_warnfile)  
+        app2 = TestApp(srcdir=test_root, buildername='html', warning=feed_warnfile)
         app2.build(force_all=False, filenames=['most_aged'])
         f = feedparser.parse(rss_path)
         self.assertEqual(f.bozo, 0)
@@ -87,7 +75,7 @@ class TestFeedStructure(unittest.TestCase):
         self.assertEqual(links.pop()['href'], base_path + '/A_older.html')
         self.assertEqual(links.pop()['href'], entries[0].link + '#the-latest-blog-post')
     
-        index_path  = os.path.join(app.outdir, 'index.html')
+        index_path = (app.outdir / 'index.html')
         soup = BeautifulSoup(open(index_path).read())
         latest_tree = soup.find('div', 'feed-latest-wrapper')
         latest_items = latest_tree.findAll('li', 'feed-dated-article')

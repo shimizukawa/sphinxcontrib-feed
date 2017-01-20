@@ -22,7 +22,7 @@ except ImportError:
 from sphinx import application
 from sphinx.ext.autodoc import AutoDirective
 
-from path import path
+from sphinx_testing.path import path
 
 __all__ = [
     'test_root',

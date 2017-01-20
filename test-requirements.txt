@@ -1,0 +1,7 @@
+tox
+pytest
+Sphinx
+sphinx-testing
+BeautifulSoup
+feedparser
+

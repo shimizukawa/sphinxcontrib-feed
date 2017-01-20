@@ -169,7 +169,7 @@ html_static_path = []
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'SphinxSyndicateTestdoc'
 
-siteurl = 'file://' + os.path.abspath('./_build/html') #won't work in windows
+siteurl = 'http://example.com/html'
 feed_base_url = siteurl
 feed_description = "The outpourings of a Sphinx developer"
 feed_filename = 'rss.xml'
