@@ -1,0 +1,14 @@
+*.pyc
+*.egg
+*.so
+*.swp
+
+.cache/
+TAGS
+.tags
+.tox
+.DS_Store
+
+build/
+dist/
+*.egg-info/
