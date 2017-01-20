@@ -34,11 +34,17 @@ class FSDict(dict):
         super(FSDict, self).__init__(*args, **kwargs)
     
     def __setitem__(self, key, val, *args, **kwargs):
-        pickle.dump(val, open(self.work_dir/key, 'wb'))
+        try:
+            pickle.dump(val, open(self.work_dir/key, 'wb'))
+        except Exception:
+            raise RuntimeError('Can not dump to pickle file: %s', self.work_dir / key)
     
     def __getitem__(self, key, *args, **kwargs):
-        return pickle.load(open(self.work_dir/key, 'rb'))
-    
+        try:
+            return pickle.load(open(self.work_dir/key, 'rb'))
+        except Exception:
+            raise RuntimeError('Can not load from pickle file: %s', self.work_dir / key)
+
     def __repr__(self):
         """
         a hardline list of everything in the dict. may be long.
