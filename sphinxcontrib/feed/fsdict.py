@@ -1,7 +1,7 @@
 # −*− coding: UTF−8 −*−
-from path import path
-import os
 import pickle
+
+from .path import path
 """
 A class providing dictionary access to a folder.
 cribbed from http://bitbucket.org/howthebodyworks/fsdict
@@ -27,17 +27,17 @@ class FSDict(dict):
             work_dir = get_tmp_dir()
         self.work_dir = path(work_dir)
         if not self.work_dir.exists():
-            self.work_dir.mkdir()
+            self.work_dir.makedirs()
         for key, val in getattr(initval, 'iteritems', initval.__iter__)():
             self[key] = val
         self.unclean_dirs.append(self.work_dir)
         super(FSDict, self).__init__(*args, **kwargs)
     
     def __setitem__(self, key, val, *args, **kwargs):
-        pickle.dump(val, open(self.work_dir/key, 'w'))
+        pickle.dump(val, open(self.work_dir/key, 'wb'))
     
     def __getitem__(self, key, *args, **kwargs):
-        return pickle.load(open(self.work_dir/key, 'r'))
+        return pickle.load(open(self.work_dir/key, 'rb'))
     
     def __repr__(self):
         """
@@ -55,12 +55,12 @@ class FSDict(dict):
             return super(FSDict, self).__str__()
     
     def keys(self, *args, **kwargs):
-        return [key for key in self.iterkeys()]
+        return list(self.iterkeys())
     
     def iterkeys(self, *args, **kwargs):
-        for f in self.work_dir.files():
-            yield str(self.work_dir.relpathto(f))
-        
+        for f in self.work_dir.listdir():
+            yield self.work_dir / f
+
     def iteritems(self):
         for key in self.iterkeys():
             yield key, self[key]
@@ -90,7 +90,7 @@ class FSDict(dict):
         
         try:
             self.work_dir.move(new_dir)
-        except Exception, e:
+        except Exception as e:
             raise
         else:
             self.work_dir = new_dir

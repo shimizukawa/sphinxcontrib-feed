@@ -1,13 +1,18 @@
 """
 utils needed for django's feed generator
-"""
 
-"""
 Utilities for XML generation/parsing.
 from django.utils.xmlutils import SimplerXMLGenerator
 """
-
 from xml.sax.saxutils import XMLGenerator
+import locale
+import datetime
+import codecs
+from decimal import Decimal
+#from django.utils.encoding import force_unicode, iri_to_uri
+
+from six import integer_types, string_types, text_type
+from six.moves.urllib.parse import quote
 
 class SimplerXMLGenerator(XMLGenerator):
     def addQuickElement(self, name, contents=None, attrs=None):
@@ -17,16 +22,7 @@ class SimplerXMLGenerator(XMLGenerator):
         if contents is not None:
             self.characters(contents)
         self.endElement(name)
-        
-"""
-from django.utils.encoding import force_unicode, iri_to_uri
-"""
-import types
-import urllib
-import locale
-import datetime
-import codecs
-from decimal import Decimal
+
 
 class DjangoUnicodeDecodeError(UnicodeDecodeError):
     def __init__(self, obj, *args):
@@ -54,10 +50,9 @@ def is_protected_type(obj):
     force_unicode(strings_only=True).
     """
     return isinstance(obj, (
-        types.NoneType,
-        int, long,
+        type(None),
         datetime.datetime, datetime.date, datetime.time,
-        float, Decimal)
+        float, Decimal) + integer_types
     )
 
 def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
@@ -70,12 +65,12 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
     if strings_only and is_protected_type(s):
         return s
     try:
-        if not isinstance(s, basestring,):
+        if not isinstance(s, string_types):
             if hasattr(s, '__unicode__'):
-                s = unicode(s)
+                s = text_type(s)
             else:
                 try:
-                    s = unicode(str(s), encoding, errors)
+                    s = text_type(str(s), encoding, errors)
                 except UnicodeEncodeError:
                     if not isinstance(s, Exception):
                         raise
@@ -87,12 +82,12 @@ def force_unicode(s, encoding='utf-8', strings_only=False, errors='strict'):
                     # output should be.
                     s = ' '.join([force_unicode(arg, encoding, strings_only,
                             errors) for arg in s])
-        elif not isinstance(s, unicode):
+        elif not isinstance(s, text_type):
             # Note: We use .decode() here, instead of unicode(s, encoding,
             # errors), so that if s is a SafeString, it ends up being a
             # SafeUnicode at the end.
             s = s.decode(encoding, errors)
-    except UnicodeDecodeError, e:
+    except UnicodeDecodeError as e:
         if not isinstance(s, Exception):
             raise DjangoUnicodeDecodeError(s, *e.args)
         else:
@@ -111,9 +106,9 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
 
     If strings_only is True, don't convert (some) non-string-like objects.
     """
-    if strings_only and isinstance(s, (types.NoneType, int)):
+    if strings_only and isinstance(s, (type(None), int)):
         return s
-    elif not isinstance(s, basestring):
+    elif not isinstance(s, text_type):
         try:
             return str(s)
         except UnicodeEncodeError:
@@ -123,8 +118,8 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
                         errors) for arg in s])
-            return unicode(s).encode(encoding, errors)
-    elif isinstance(s, unicode):
+            return text_type(s).encode(encoding, errors)
+    elif isinstance(s, text_type):
         return s.encode(encoding, errors)
     elif s and encoding != 'utf-8':
         return s.decode('utf-8', errors).encode(encoding, errors)
@@ -156,7 +151,7 @@ def iri_to_uri(iri):
     # converted.
     if iri is None:
         return iri
-    return urllib.quote(smart_str(iri), safe="/#%[]=:;$&()+,!?*@'~")
+    return quote(smart_str(iri), safe="/#%[]=:;$&()+,!?*@'~")
 
 
 # The encoding of the default system locale but falls back to the

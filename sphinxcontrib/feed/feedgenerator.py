@@ -22,7 +22,7 @@ http://diveintomark.org/archives/2004/02/04/incompatible-rss
 
 import re
 import datetime
-from django_support import SimplerXMLGenerator, iri_to_uri, force_unicode
+from .django_support import SimplerXMLGenerator, iri_to_uri, force_unicode
 
 def rfc2822_date(date):
     # We do this ourselves to be timezone aware, email.Utils is not tz aware.
@@ -31,9 +31,15 @@ def rfc2822_date(date):
         offset = date.tzinfo.utcoffset(date)
         timezone = (offset.days * 24 * 60) + (offset.seconds / 60)
         hour, minute = divmod(timezone, 60)
-        return time_str + "%+03d%02d" % (hour, minute)
+        result = time_str + "%+03d%02d" % (hour, minute)
     else:
-        return date.strftime('%a, %d %b %Y %H:%M:%S -0000')
+        result = date.strftime('%a, %d %b %Y %H:%M:%S -0000')
+
+    try:
+        return result.decode('utf-8')
+    except (UnicodeDecodeError, AttributeError):
+        return result
+
 
 def rfc3339_date(date):
     if date.tzinfo:
@@ -41,9 +47,15 @@ def rfc3339_date(date):
         offset = date.tzinfo.utcoffset(date)
         timezone = (offset.days * 24 * 60) + (offset.seconds / 60)
         hour, minute = divmod(timezone, 60)
-        return time_str + "%+03d:%02d" % (hour, minute)
+        result = time_str + "%+03d:%02d" % (hour, minute)
     else:
-        return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+        result = date.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    try:
+        return result.decode('utf-8')
+    except (UnicodeDecodeError, AttributeError):
+        return result
+
 
 def get_tag_uri(url, date):
     "Creates a TagURI. See http://diveintomark.org/archives/2004/05/28/howto-atom-id"
@@ -204,7 +216,7 @@ class RssFeed(SyndicationFeed):
             handler.addQuickElement(u"category", cat)
         if self.feed['feed_copyright'] is not None:
             handler.addQuickElement(u"copyright", self.feed['feed_copyright'])
-        handler.addQuickElement(u"lastBuildDate", rfc2822_date(self.latest_post_date()).decode('utf-8'))
+        handler.addQuickElement(u"lastBuildDate", rfc2822_date(self.latest_post_date()))
         if self.feed['ttl'] is not None:
             handler.addQuickElement(u"ttl", self.feed['ttl'])
 
@@ -238,7 +250,7 @@ class Rss201rev2Feed(RssFeed):
             handler.addQuickElement(u"dc:creator", item["author_name"], {"xmlns:dc": u"http://purl.org/dc/elements/1.1/"})
 
         if item['pubdate'] is not None:
-            handler.addQuickElement(u"pubDate", rfc2822_date(item['pubdate']).decode('utf-8'))
+            handler.addQuickElement(u"pubDate", rfc2822_date(item['pubdate']))
         if item['comments'] is not None:
             handler.addQuickElement(u"comments", item['comments'])
         if item['unique_id'] is not None:
@@ -281,7 +293,7 @@ class Atom1Feed(SyndicationFeed):
         if self.feed['feed_url'] is not None:
             handler.addQuickElement(u"link", "", {u"rel": u"self", u"href": self.feed['feed_url']})
         handler.addQuickElement(u"id", self.feed['id'])
-        handler.addQuickElement(u"updated", rfc3339_date(self.latest_post_date()).decode('utf-8'))
+        handler.addQuickElement(u"updated", rfc3339_date(self.latest_post_date()))
         if self.feed['author_name'] is not None:
             handler.startElement(u"author", {})
             handler.addQuickElement(u"name", self.feed['author_name'])
@@ -307,7 +319,7 @@ class Atom1Feed(SyndicationFeed):
         handler.addQuickElement(u"title", item['title'])
         handler.addQuickElement(u"link", u"", {u"href": item['link'], u"rel": u"alternate"})
         if item['pubdate'] is not None:
-            handler.addQuickElement(u"updated", rfc3339_date(item['pubdate']).decode('utf-8'))
+            handler.addQuickElement(u"updated", rfc3339_date(item['pubdate']))
 
         # Author information.
         if item['author_name'] is not None:

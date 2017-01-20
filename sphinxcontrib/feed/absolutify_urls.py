@@ -4,7 +4,7 @@
 import html5lib
 import html5lib.serializer
 import html5lib.treewalkers
-import urlparse
+from six.moves.urllib import parse as urlparse
 
 # List of (ELEMENT, ATTRIBUTE) for HTML5 attributes which contain URLs.
 # Based on the list at http://www.feedparser.org/docs/resolving-relative-links.html

@@ -18,7 +18,7 @@ from sphinx.util.nodes import explicit_title_re, set_source_info
 from sphinx.util import url_re, docname_join
 from sphinx.util.matching import patfilter
 
-from feednodes import latest
+from .feednodes import latest
 
 class Latest(Directive):
     """

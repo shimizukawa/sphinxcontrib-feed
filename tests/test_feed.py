@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from StringIO import StringIO
+from six import StringIO
 from sphinx_testing.path import path
 from sphinx_testing.util import TestApp
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import feedparser
 import unittest
 
@@ -68,7 +68,7 @@ class TestFeedStructure(unittest.TestCase):
         #Tests for relative URIs. note that these tests only work because there is
         # no xml:base - otherwise feedparser will supposedly fix them up for us - 
         # http://www.feedparser.org/docs/resolving-relative-links.html
-        links = BeautifulSoup(entries[0].description).findAll('a')
+        links = BeautifulSoup(entries[0].description, 'html5lib').findAll('a')
         # These links will look like:
         #[<a class="headerlink" href="#the-latest-blog-post" title="Permalink to this headline">¶</a>, <a class="reference internal" href="older.html"><em>a relative link</em></a>, <a class="reference external" href="http://google.com/">an absolute link</a>]
         self.assertEqual(links.pop()['href'], "http://google.com/")
@@ -76,7 +76,7 @@ class TestFeedStructure(unittest.TestCase):
         self.assertEqual(links.pop()['href'], entries[0].link + '#the-latest-blog-post')
     
         index_path = (app.outdir / 'index.html')
-        soup = BeautifulSoup(open(index_path).read())
+        soup = BeautifulSoup(open(index_path).read(), 'html5lib')
         latest_tree = soup.find('div', 'feed-latest-wrapper')
         latest_items = latest_tree.findAll('li', 'feed-dated-article')
         actual_links = [entry.contents[0]['href'] for entry in latest_items]

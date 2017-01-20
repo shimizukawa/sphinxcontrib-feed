@@ -1,11 +1,12 @@
-from fsdict import FSDict
-import feedgenerator
-from urllib import quote_plus
+from six.moves.urllib.parse import quote_plus
 import os.path
-from feeddirectives import Latest
-from feednodes import latest
-from sphinx.addnodes import toctree
+
 from docutils import nodes
+
+from .fsdict import FSDict
+from . import feedgenerator
+from .feeddirectives import Latest
+from .feednodes import latest
 
 
 #global
@@ -130,16 +131,16 @@ def cache_article_dates(env):
 
     feed_pub_dates = env.feed_pub_dates
     
-    for docname, doc_metadata in env.metadata.iteritems():
+    for docname, doc_metadata in env.metadata.items():
         doc_metadata = env.metadata.get(docname, {})
         if 'date' not in doc_metadata:
             continue #don't index dateless articles
         try:
             pub_date = parse_date(doc_metadata['date'])
             feed_pub_dates[docname] = pub_date
-        except ValueError, exc:
+        except ValueError as exc:
             #probably a nonsensical date
-            app.builder.warn('date parse error: ' + str(exc) + ' in ' + docname)
+            env.warn('date parse error: ' + str(exc) + ' in ' + docname)
 
 def get_date_for_article(env, docname):
     feed_pub_dates = env.feed_pub_dates
@@ -155,7 +156,7 @@ def create_feed_item(app, docname, templatename, ctx, doctree):
     We also inject useful metadata into the context here.
     """
     global feed_entries
-    from absolutify_urls import absolutify
+    from .absolutify_urls import absolutify
     env = app.builder.env
     metadata = env.metadata.get(docname, {})
     pub_date = get_date_for_article(env, docname)

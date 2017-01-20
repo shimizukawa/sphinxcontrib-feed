@@ -8,8 +8,7 @@ This package contains the feed Sphinx extension.
 It creates an RSS feed of recently updated sphinx pages.
 '''
 
-requires = ['Sphinx>=0.6', 'python-dateutil<2', 'html5lib']
-tests_require = ['BeautifulSoup>=3.2.0', 'feedparser']
+requires = ['Sphinx>=0.6', 'python-dateutil', 'html5lib']
 
 setup(
     name='feed',
@@ -32,11 +31,12 @@ setup(
         'Programming Language :: Python',
         'Topic :: Documentation',
         'Topic :: Utilities',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
     ],
     platforms='any',
     packages=find_packages(),
     include_package_data=True,
     install_requires=requires,
-    tests_require=tests_require,
     namespace_packages=['sphinxcontrib'],
 )

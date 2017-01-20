@@ -2,6 +2,6 @@ tox
 pytest
 Sphinx
 sphinx-testing
-BeautifulSoup
+BeautifulSoup4
 feedparser
-
+six
