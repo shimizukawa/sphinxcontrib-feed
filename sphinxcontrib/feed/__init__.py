@@ -49,6 +49,11 @@ def setup(app):
     #app.connect('doctree-read', parse_article_date)
     app.connect('html-page-context', create_feed_item)
     app.connect('doctree-resolved', process_latest_toc)
+    return {
+        'version': 'unknown',  # FIXME
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
+    }
 
 def purge_dates(app, env, docname):
     if not hasattr(env, 'feed_pub_dates'):
