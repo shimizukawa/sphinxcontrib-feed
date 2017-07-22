@@ -1,5 +1,6 @@
 tox
 pytest
+pytest-pythonpath
 Sphinx
 sphinx-testing
 BeautifulSoup4
