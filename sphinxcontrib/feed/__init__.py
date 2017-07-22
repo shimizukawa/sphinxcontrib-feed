@@ -246,6 +246,6 @@ def get_description_for_feed(ctx):
     # remove h1
     body = re.sub(r'<h1.*?>.*?</h1>', '', body)
     # remove headerlink
-    body = re.sub(r'<a class=headerlink.*?>¶</a>', '', body)
+    body = re.sub(r'<a class="headerlink["\s].*?>¶</a>', '', body)
 
     return body
