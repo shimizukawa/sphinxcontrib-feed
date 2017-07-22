@@ -1,4 +1,5 @@
 import os.path
+import re
 
 from docutils import nodes
 from six.moves.urllib.parse import quote_plus
@@ -178,7 +179,7 @@ def create_feed_item(app, docname, templatename, ctx, doctree):
       'title': ctx.get('title'),
       'link': link,
       'unique_id': link,
-      'description': absolutify(ctx.get('body'), link),
+      'description': absolutify(get_description_for_feed(ctx), link),
       'pubdate': pub_date
     }
     if 'author' in metadata:
@@ -239,3 +240,12 @@ def dated_name(docname, date):
     characters. NB, at the moment, hour of publication is ignored.
     """
     return quote_plus(MAGIC_SEPARATOR.join([date.isoformat(), docname]))
+
+def get_description_for_feed(ctx):
+    body = ctx.get('body')
+    # remove h1
+    body = re.sub(r'<h1.*?>.*?</h1>', '', body)
+    # remove headerlink
+    body = re.sub(r'<a class=headerlink.*?>¶</a>', '', body)
+
+    return body

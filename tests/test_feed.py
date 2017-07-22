@@ -70,11 +70,10 @@ class TestFeedStructure(unittest.TestCase):
         # http://www.feedparser.org/docs/resolving-relative-links.html
         links = BeautifulSoup(entries[0].description, 'html5lib').findAll('a')
         # These links will look like:
-        #[<a class="headerlink" href="#the-latest-blog-post" title="Permalink to this headline">¶</a>, <a class="reference internal" href="older.html"><em>a relative link</em></a>, <a class="reference external" href="http://google.com/">an absolute link</a>]
+        #[<a class="reference internal" href="older.html"><em>a relative link</em></a>, <a class="reference external" href="http://google.com/">an absolute link</a>]
         self.assertEqual(links.pop()['href'], "http://google.com/")
         self.assertEqual(links.pop()['href'], base_path + '/A_older.html')
-        self.assertEqual(links.pop()['href'], entries[0].link + '#the-latest-blog-post')
-    
+
         index_path = (app.outdir / 'index.html')
         soup = BeautifulSoup(open(index_path).read(), 'html5lib')
         latest_tree = soup.find('div', 'feed-latest-wrapper')
