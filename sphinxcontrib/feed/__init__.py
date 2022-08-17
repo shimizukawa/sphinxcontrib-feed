@@ -229,7 +229,7 @@ def emit_feed(app, exc):
         feed.add_item(**feed_entries[key])     
     outfilename = os.path.join(app.builder.outdir,
       app.config.feed_filename)
-    fp = open(outfilename, 'w')
+    fp = open(outfilename, 'w', encoding='utf-8')
     feed.write(fp, 'utf-8')
     fp.close()
 
